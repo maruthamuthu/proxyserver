@@ -1,12 +1,9 @@
 package com.proxy;
 
-import com.google.gson.Gson;
 import org.json.JSONObject;
 
 class ProxyResponse
 {
-    private static final Gson GSON = new Gson();
-
     private int statusCode;
     private String response;
 
