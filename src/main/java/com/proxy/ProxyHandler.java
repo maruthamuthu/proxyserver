@@ -18,15 +18,14 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.regex.Pattern;
 
-public class ProxyHandler
+class ProxyHandler
 {
     private static final Pattern ALLOWED_REQUEST_METHODS = Pattern.compile("^(POST|PUT|GET|DELETE)$");
 
 
-    public static ProxyResponse handleInvocation(QueryParamsMap queryParamsMap)
+    static ProxyResponse handleInvocation(QueryParamsMap queryParamsMap)
     {
         String clientID = queryParamsMap.get("client_id").value();
         String requestUrl = queryParamsMap.get("request_url").value();
@@ -35,7 +34,7 @@ public class ProxyHandler
 
         if (isEmpty(clientID) || isEmpty(requestUrl) || isEmpty(method) || !ALLOWED_REQUEST_METHODS.matcher(method).matches())
         {
-           return getBadRequestResponse();
+            return ProxyResponse.of(HttpServletResponse.SC_BAD_REQUEST, "Mandatory parameters are missing, please refer the API doc.");
         }
 
         String headerString = queryParamsMap.get("headers").value();
@@ -48,7 +47,7 @@ public class ProxyHandler
             }
             catch (JSONException e)
             {
-                return getBadRequestResponse();
+                return ProxyResponse.of(HttpServletResponse.SC_BAD_REQUEST, "Invalid value passed for header, please refer the API doc.");
             }
         }
         String body = queryParamsMap.get("request_body").value();
@@ -60,13 +59,9 @@ public class ProxyHandler
         return (val == null || val.trim().length() == 0);
     }
 
-    private static ProxyResponse getBadRequestResponse()
+    private static ProxyResponse invoke(String clientID, String urlString, String method, JSONObject headers, String requestBody)
     {
-        return ProxyResponse.of(HttpServletResponse.SC_BAD_REQUEST, "Mandatory parameters are missing, please refer the API doc.");
-    }
-
-    public static ProxyResponse invoke(String clientID, String urlString, String method, JSONObject headers, String requestBody)
-    {
+        // We can aslo validate a valid clientID if required.
         if (ThresholdMonitor.canAllow(clientID))
         {
             try
@@ -86,8 +81,8 @@ public class ProxyHandler
                     iterator.forEachRemaining(key -> connection.setRequestProperty(key, headers.optString(key)));
                 }
 
-                connection.setConnectTimeout(10000);
-                connection.setReadTimeout(10000);
+                connection.setConnectTimeout(5000); // 5 seconds
+                connection.setReadTimeout(5000);
                 connection.setRequestMethod(method);
 
                 if ("POST".equals(method) || "PUT".equals(method))
@@ -95,6 +90,7 @@ public class ProxyHandler
                     byte[] postData = requestBody.getBytes(StandardCharsets.UTF_8);
                     connection.setRequestProperty("charset", "UTF-8");
                     connection.setDoOutput(true);
+                    connection.setRequestProperty("Content-Type", "application/json");
                     connection.setRequestProperty("Content-Length", Integer.toString(postData.length));
                     try(DataOutputStream wr = new DataOutputStream(connection.getOutputStream()))
                     {

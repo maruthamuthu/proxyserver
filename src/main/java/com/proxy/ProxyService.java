@@ -10,10 +10,13 @@ public class ProxyService
     {
         port(3000);
 
-        post("/invoke", "application/json", (request, response) -> {
+        post("/invoke", (request, response) -> {
+
             ProxyResponse httpResponse = ProxyHandler.handleInvocation(request.queryMap());
+
             response.status(httpResponse.getStatusCode());
             response.type("application/json");
+
             return httpResponse.getResponse();
         });
 

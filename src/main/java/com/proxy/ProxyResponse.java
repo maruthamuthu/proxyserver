@@ -24,7 +24,6 @@ class ProxyResponse
         jsonObject.put("code", statusCode);
         jsonObject.put("response", response);
         return jsonObject.toString();
-        //return response;
     }
 
     static ProxyResponse of(int statusCode, String response)
