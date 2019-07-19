@@ -1,6 +1,6 @@
-#Simple Proxy Server
+# Simple Proxy Server
 
-##Please follow the below steps to build and run:
+## Please follow the below steps to build and run:
 
    1. Clone this repo
    2. run - mvn clean install
