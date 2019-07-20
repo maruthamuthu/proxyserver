@@ -3,8 +3,8 @@
 ## Please follow the below steps to build and run:
 
    1. Clone this repo
-   2. run - mvn clean install
-   3. run - mvn exec:java -Dexec.mainClass="com.proxy.ProxyService"
+   2. run - **mvn clean install**
+   3. run - **mvn exec:java -Dexec.mainClass="com.proxy.ProxyService"**
    
  Before running this, please make sure you have installed maven and redis (runinng on port 6379 - default port). 
  
